@@ -1,66 +1,87 @@
 // Node.js backend
+require('dotenv').config();
 const express = require('express');
 const nodemailer = require('nodemailer');
 const mjml = require('mjml');
 const fs = require('fs');
 const path = require('path');
+const winston = require('winston');
+
 
 const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
+// Logger setup
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => `${timestamp} [${level}]: ${message}`)
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'app.log' })
+  ]
+});
+
+// Utility to replace placeholders
+function replacePlaceholders(template, data) {
+  return template.replace(/{{(.*?)}}/g, (_, key) => data[key.trim()] || '');
+}
+
 // Endpoint to send email
 app.post('/send-email', async (req, res) => {
 
-  console.log('Request Body:', req.body); // Log incoming data from the frontend
+  logger.info('Received email request:', req.body); // Logger incoming data from the frontend
 
   const { name, email, message } = req.body;
 
+  // Validate input
+  if (!name || !email || !message) {
+    logger.error('Validation error: Missing required fields.');
+    return res.status(400).json({ message: 'Name, email, and message are required.' });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    logger.error('Validation error: Invalid email format.');
+    return res.status(400).json({ message: 'Invalid email format.' });
+  }
+
   // Load and replace placeholders in the MJML template
-  const mjmlTemplate = fs.readFileSync(path.join(__dirname, 'templates', 'email.mjml'), 'utf-8');
-  const filledTemplate = mjmlTemplate.replace('{{name}}', name).replace('{{message}}', message);
+ try {
+    const mjmlTemplate = fs.readFileSync(path.join(__dirname, 'templates', 'email.mjml'), 'utf-8');
+    const filledTemplate = replacePlaceholders(mjmlTemplate, { name, message });
 
-  console.log('this is mjmlTemplate: ',mjmlTemplate, 'this is filledTemplate: ',filledTemplate);
+    // Compile MJML to HTML
+    const { html } = mjml(filledTemplate);
 
-  // Compile MJML to HTML
-  const { html } = mjml(filledTemplate);
+    // Configure Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
 
-  console.log('this is html', html);
-
-  // Set up Nodemailer
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'dhouha.mejerdi.95@gmail.com',       
-      pass: 'dwml qdfw miem xiuu'           // Use the generated App Password
-    }
-  });
-
-  transporter.verify((error, success) => {
-    if (error) {
-      console.error('SMTP connection error:', error);
-    } else {
-      console.log('SMTP connection successful:', success);
-    }
-  });
-
-  console.log('this is transporter', transporter);
-
-  // Send the email
-  try {
     await transporter.sendMail({
-      from: 'dhouha.mejerdi.95@gmail.com',
+      from: process.env.EMAIL_USER,
       to: email,
       subject: 'A Cool Email for You!',
       html
     });
+
+    logger.info(`Email sent successfully to ${email}`);
     res.json({ message: 'Email sent successfully!' });
   } catch (error) {
+    logger.error('Error processing email:', error);
     res.status(500).json({ message: 'Error sending email', error });
   }
 });
 
 // Start the server
 app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
+  logger.info('Server is running on http://localhost:3000');
 });

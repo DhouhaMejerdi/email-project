@@ -1,9 +1,70 @@
 <mjml>
+  <mj-head>
+    <!-- Meta Information -->
+    <mj-title>Welcome to Our Service</mj-title>
+    <mj-preview>Thank you for joining us! We're excited to have you onboard.</mj-preview>
+
+    <!-- Custom Styles -->
+    <mj-style inline="inline">
+      .hero-text {
+        color: #007BFF;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .footer-text {
+        color: #ffffff;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      a {
+        color: #007BFF;
+        text-decoration: none;
+      }
+    </mj-style>
+  </mj-head>
   <mj-body>
-    <mj-section>
+    <!-- Hero Section -->
+    <mj-section background-color="#f4f4f4" padding="20px">
       <mj-column>
-        <mj-text font-size="20px">Hi, {{name}}!</mj-text>
-        <mj-text>{{message}}</mj-text>
+        <mj-image width="120px" src="https://i.imgur.com/ahYOOHq.png" alt="Pakistan Logo" align="center"/>
+        <mj-text align="center" font-family="Arial, sans-serif">
+          <span class="hero-text">Welcome, {{name}}!</span>
+        </mj-text>
+        <mj-text align="center" font-size="16px" font-family="Arial, sans-serif" color="#555555" padding="10px 25px">
+          We’re thrilled to have you here. Explore endless possibilities with us!
+        </mj-text>
+        <mj-button 
+          href="https://pakistan.gov.pk/"
+          background-color="#007BFF"
+          color="#ffffff"
+          font-family="Arial, sans-serif"
+          font-size="16px"
+          padding="15px 25px">
+          Get Started Now
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Informative Section -->
+    <mj-section background-color="#ffffff" padding="20px">
+      <mj-column>
+        <mj-text font-size="14px" font-family="Arial, sans-serif" color="#888888" padding="10px 25px">
+          {{message}}
+        </mj-text>
+        <mj-divider border-color="#eeeeee" />
+        <mj-text font-size="14px" font-family="Arial, sans-serif" color="#888888">
+          Need help? Reach out to us at <a href="mailto:support@yourwebsite.com">support@yourwebsite.com</a>.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer Section -->
+    <mj-section background-color="#333333" padding="20px">
+      <mj-column>
+        <mj-text align="center" font-family="Arial, sans-serif" padding="0" class="footer-text">
+          © 2024 Your Company. All rights reserved.<br/>
+          <a href="https://yourwebsite.com/unsubscribe" style="color: #ffffff; text-decoration: underline;">Unsubscribe</a>
+        </mj-text>
       </mj-column>
     </mj-section>
   </mj-body>
